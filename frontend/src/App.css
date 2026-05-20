@@ -1,0 +1,10 @@
+/* App shell styles are primarily defined in index.css. */
+
+nav a {
+  color: #e0e0e0;
+  font-weight: 500;
+}
+
+nav a:hover {
+  color: #a78bfa;
+}
