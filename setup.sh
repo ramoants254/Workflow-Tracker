@@ -15,17 +15,28 @@ if [[ -z "$PYTHON_BIN" ]]; then
 	exit 1
 fi
 
+NODE_BIN="$(command -v node || true)"
+if [[ -z "$NODE_BIN" ]]; then
+	echo "Error: node is required but was not found in PATH."
+	exit 1
+fi
+
+NPM_BIN="$(command -v npm || true)"
+if [[ -z "$NPM_BIN" ]]; then
+	echo "Error: npm is required but was not found in PATH."
+	exit 1
+fi
+
 # Backend setup
 echo ""
 echo "📦 Setting up backend..."
 "$PYTHON_BIN" -m venv env
-source env/bin/activate
-
-python -m pip install --upgrade pip -q
-python -m pip install -r requirements.txt -q
+VENV_PYTHON="$SCRIPT_DIR/env/bin/python"
+"$VENV_PYTHON" -m pip install --upgrade pip -q
+"$VENV_PYTHON" -m pip install -r requirements.txt -q
 cd backend
-python manage.py migrate --noinput
-python manage.py shell <<'PY'
+"$VENV_PYTHON" manage.py migrate --noinput
+"$VENV_PYTHON" manage.py shell <<'PY'
 from applications.models import Application
 
 Application.objects.update_or_create(
@@ -48,7 +59,7 @@ cd ..
 echo ""
 echo "📦 Setting up frontend..."
 cd frontend
-npm install -q
+"$NPM_BIN" install -q
 echo "✓ Frontend ready"
 cd ..
 
@@ -56,10 +67,11 @@ echo ""
 echo "✅ Setup complete!"
 echo ""
 echo "To run the application:"
-echo "  1. Backend:  cd backend && source ../env/bin/activate && python manage.py runserver"
+echo "  1. Backend:  cd backend && ../env/bin/python manage.py runserver"
 echo "  2. Frontend: cd frontend && npm run dev"
 echo ""
 echo "Backend API:  http://127.0.0.1:8000/api/applications/"
 echo "Frontend:     http://localhost:5173"
 echo "Demo detail:   http://127.0.0.1:8000/api/applications/APP-681F3682/"
+echo "⚠️  Note: npm audit may show a moderate esbuild warning (dev-only, not a production risk)"
 echo ""
